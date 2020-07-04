@@ -152,5 +152,5 @@ if __name__ == '__main__':
     sequence = main()
     #print(sequence)
     url='https://lf8q0kx152.execute-api.us-east-2.amazonaws.com/default/computeFitnessScore'
-    x=requests.post(url,json={"qconfig":sequence,"userID":377686,"githubLink":https://github.com/askhanna/Data-Science/new/master/Queens_GA.ipnyb})
+    x=requests.post(url,json={"qconfig":sequence,"userID":377686,"githubLink":"https://github.com/askhanna/Data-Science/new/master/Queens_GA.ipnyb"})
     print(x.text)
