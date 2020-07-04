@@ -1,0 +1,156 @@
+import numpy as np
+import random
+import requests
+
+random.seed(42)
+
+# Global parameters
+MUTATION_RATE = 0.01
+POPULATION_SIZE = 100 # Number of individuals in each generation
+QUEENS = 8
+
+'''
+Gene Pool comprises of several genes. Similarly the Gene pool class denotes unique
+arrangement of 8 queens (or genes). A population will comprise of 
+several randomly created gene pools which will be selected to create
+new poulation after every generation.
+ '''
+class Gene_Pool(object):
+
+    def __init__(self,gene_pool):
+        self.gene_pool = gene_pool # This is the sequence of queens
+        self.fitness = self.get_fitness()
+    
+    @classmethod
+    def create_gene_pool(self):
+        '''
+        Create an individual gene pool through random permutation of
+        queens on the board
+        '''
+        global QUEENS
+        return np.random.permutation(QUEENS).tolist()
+
+    def get_fitness(self):
+        '''
+        Calculate fitness score of each gene pool. Here fitness score is sum of
+        all queens in danger. A lower fitness score means safer queens. 
+        The objective is to optimize the fitness score to 0.
+        '''
+        fitness = 0
+        lst = self.gene_pool
+        for i in range(len(lst)):
+            q0 = lst[i]
+            # print("Running index: {}..".format(i))
+            for j in range(i+1,len(lst)):
+                # print("Checking for index: {}..".format(j))
+                if i == j:
+                    pass
+                else:
+                    delta = abs(j-i)
+                    if ((lst[j] == q0 + delta) or (lst[j] == q0 - delta)
+                         or (lst[j] == q0)):
+                        fitness += 1
+                        # print("Fitness increased for index: {}".format(j))
+                    else:
+                        pass
+        #print("Total Fitness: {}".format(fitness))
+        return fitness
+    
+    @classmethod
+    def mutated_gene(self):
+        return random.choice(range(QUEENS))
+
+    def crossover(self,par_b):
+        '''
+        This function creates an offspring gene pool by mating two parents.
+        '''
+        mutation_prob = random.random()
+        child_gene_pool = []
+
+        for gp1,gp2 in zip(self.gene_pool,par_b.gene_pool):
+            mutation_prob = random.random()
+            if mutation_prob < 0.45:
+                child_gene_pool.append(gp1)
+            elif mutation_prob < 0.90:
+                child_gene_pool.append(gp2)
+            else:
+                child_gene_pool.append(self.mutated_gene())
+        return Gene_Pool(child_gene_pool)
+
+def init_population():
+    population = []
+    for _ in range(POPULATION_SIZE):
+        gene_pool = Gene_Pool.create_gene_pool()
+        population.append(Gene_Pool(gene_pool))
+    return population
+
+def new_generation(gene_pool_lst):
+    new_generation = []
+    '''
+    Selection Process for the next generation:
+    1. Top 10% fit gene pool will go to the next generation
+    2. For the remaining 90% population, Crossover will happen 
+    between two sets of top 50% of fit gene pool
+    3. During the cross over process some mutation will happen in 10% of cases
+    '''
+    # Select 10% of the population to go into the next generation
+    s = int((10*POPULATION_SIZE)/100) 
+    new_generation.extend(gene_pool_lst[:s])
+
+    #Fill the remaining 90% of the population through crossover
+    s = int((90*POPULATION_SIZE)/100)
+    for _ in range(s):
+        pop_a = random.choice(gene_pool_lst[:50])
+        pop_b = random.choice(gene_pool_lst[:50])
+        child = pop_a.crossover(pop_b)
+        new_generation.append(child)
+
+    return new_generation
+
+
+def main():
+    generation = 1
+    found = False
+    
+    '''
+    Initialize the population
+    '''
+    population = init_population()
+
+    while found == False:
+        '''
+        Calculate fitness of each gene pool or member or population
+        and sort the population based on it
+        '''
+        population = sorted(population,key = lambda x:x.fitness)
+        
+        '''
+        if the individual with the lowest score is in index 0,
+        then we know we have reaached the target
+        '''
+        if population[0].fitness == 0:
+            found = True
+            break
+        
+        population = new_generation(population)
+        '''
+        print("Generation: {}\tSequence: {}\tFitness: {}".\
+            format(generation,
+            population[0].gene_pool,
+            population[0].fitness))
+        generation += 1
+        '''
+    return population[0].gene_pool
+    '''        
+    print("Generation: {}\tSequence: {}\tFitness: {}".\
+            format(generation,
+            population[0].gene_pool,
+            population[0].fitness))
+    '''
+
+if __name__ == '__main__':
+    sequence = main()
+    #print(sequence)
+    url='https://lf8q0kx152.execute-api.us-east-2.amazonaws.com/default/computeFitnessScore'
+    x=requests.post(url,json={"qconfig":sequence,"userID":377686,"githubLink":https://github.com/askhanna/Data-Science/new/master/Queens_GA.ipnyb})
+    print(x.text)
